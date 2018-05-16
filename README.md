@@ -1,66 +1,120 @@
 # bbcscrape
 
-# NYT React Search
+# All the News That's Fit to Scrape
 
 ### Overview
 
-In this activity, you'll create a new React-based rendition of the New York Times Article Search application. This assignment requires you to create React components, work with helper/util functions, and utilize the React mounting lifecycle to query and display articles based on user searches. You'll also use Node, Express and MongoDB so that users can save articles to read later.
+In this assignment, you'll create a web app that lets users view and leave comments on the latest news. But you're not going to actually write any articles; instead, you'll flex your Mongoose and Cheerio muscles to scrape news from another site.
 
-### Instructions
+### Before You Begin
 
-1. [Check out this mockup image](HW_Assignment.png). This explains how your site's components should function.
+1. Create a GitHub repo for this assignment and clone it to your computer. Any name will do -- just make sure it's related to this project in some fashion.
 
-2. Create a MongoDB database called `nytreact`.
+2. Run `npm init`. When that's finished, install and save these npm packages:
 
-3. Using mongoose, then create an Article schema and model
+3. express
 
-4. At a minimum, articles should have each of the following fields:
+4. express-handlebars
 
-   * `title` (Title of the stored article from nytimes.com)
+5. mongoose
 
-   * `date` (publish date and time of the article)
+6. body-parser
 
-   * `url` (URL of the article on nytimes.com)
+7. cheerio
 
-   * Creating `documents` in your `articles` collection similar to  
-     ```js
-     {
-       title: 'Ali Sells Jersey House And Moves to Chicago',
-       date: '1974-07-18T00:00:00Z',
-       url: 'http://query.nytimes.com/gst/abstract.html?res=9A0DE5D8173FEF34BC4052DFB166838F669EDE'
-     }
-     ```
+8. request
 
-5. Create a Node/Express/MongoDB/ReactJS app called `nytreact`. This will be a recreation of the [NYT Articles Search](https://nytarticle-search-fsf.herokuapp.com/) exercise application we built back in [Week 6](../../../06-ajax/01-Activities/16-NYTSearch/Solved/NYTArticleSearch_Best_Solution/nyt-example.html). Running this application will:
+9. **NOTE**: If you want to earn complete credit for your work, you must use all six of these packages in your assignment.
 
-   * Create a Bootstrap layout similar to that displayed in [HW_Assignment.png](HW_Assignment.png). This should be a SPA (Single Page Application) that uses [`react-router-dom`](https://github.com/reactjs/react-router) to navigate, hide and show your React components without changing the route within Express.
+10. In order to deploy your project to Heroku, you must set up an mLab provision. mLab is remote MongoDB database that Heroku supports natively. Follow these steps to get it running:
 
-     * If you want to try out another CSS framework, feel free to use an alternative to Bootstrap.
+11. Create a Heroku app in your project directory.
 
-   * You'll need several Express routes for your app:
+12. Run this command in your Terminal/Bash window:
 
-     * `/api/articles` (get) - your components will use this to query MongoDB for all saved articles
+    * `heroku addons:create mongolab`
 
-     * `/api/articles` (post) - your components will use this to save an article to the database
+    * This command will add the free mLab provision to your project.
 
-     * `/api/articles` (delete) - your components will use this to delete a saved article in the database
+13. When you go to connect your mongo database to mongoose, do so the following way:
 
-     * `*` (get) - will load your single HTML page (with ReactJS) in `client/build/index.html`. Make sure you put this after all other GET routes
+```js
+// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
 
-   * The layout should include at least two React Components for each page `Home` and `Saved`.
+// Set mongoose to leverage built in JavaScript ES6 Promises
+// Connect to the Mongo DB
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI, {
+  useMongoClient: true
+});
+```
 
-     * **Home** - contains all of the JSX to be rendered on the homepage. This component may contain other smaller components or JSX that renders plain HTML elements. This component should be able to query the NYT API for articles. It displays the results from the API search in a rendered list that displays the article title, publication date, and allows the user to visit an article's url or save the article to the MongoDB.
+* This code should connect mongoose to your remote mongolab database if deployed, but otherwise will connect to the local mongoHeadlines database on your computer.
 
-     * **Saved** - Renders articles that are saved in the MongoDB and allows the user to visit the article's url or delete it from the MongoDB. This page may be made up of multiple smaller components or JSX that renders plain HTML elements.
+14. [Watch this demo of a possible submission](mongo-homework-demo.mov). See the deployed demo application [here](http://nyt-mongo-scraper.herokuapp.com/).
 
-* Deploy your application to Heroku once complete. Feel free to use the [Mern Example](../../01-Activities/07-Ins_Mern) as a starting point. **You must use Create React App** and current versions of React and React-Router-Dom for this assignment.
+15. Your site doesn't need to match the demo's style, but feel free to attempt something similar if you'd like. Otherwise, just be creative!
 
-- - -
+## File Structure
 
-### Bonus Live Updates to Saved Articles
+```
+├── controllers
+|  ├── fetch.js
+|  ├── headline.js
+|  └── note.js
+├── models
+|  ├── Headline.js
+|  ├── index.js
+|  └── Note.js
+├── public
+|  └── assets
+├── routes
+|  ├── api
+|  ├── index.js
+|  └── view
+├── scripts
+|  └── scrape.js
+└── views
+|   ├── home.handlebars
+|   ├── layouts
+|   └── saved.handlebars
+├── package-lock.json
+├── package.json
+└── server.js
+```
 
-* Use React routing and [socket.io](http://socket.io) to create a notification or a component that triggers whenever a user saves an article. Your message should include the title of the saved article.
-  
-  * Say you have multiple browsers open, each one visiting your site. If you save an article in one browser, then all of your browsers should notify you that a new article was saved.
-  
-  * [Socket.io NPM package](https://www.npmjs.com/package/socket.io)
+## Instructions
+
+* Create an app that accomplishes the following:
+
+  1. Whenever a user visits your site, the app should scrape stories from a news outlet of your choice and display them for the user. Each scraped article should be saved to your application database. At a minimum, the app should scrape and display the following information for each article:
+
+     * Headline - the title of the article
+
+     * Summary - a short summary of the article
+
+     * URL - the url to the original article
+
+     * Feel free to add more content to your database (photos, bylines, and so on).
+
+  2. Users should also be able to leave comments on the articles displayed and revisit them later. The comments should be saved to the database as well and associated with their articles. Users should also be able to delete comments left on articles. All stored comments should be visible to every user.
+
+* Beyond these requirements, be creative and have fun with this!
+
+### Tips
+
+* Go back to Saturday's activities if you need a refresher on how to partner one model with another.
+
+* Whenever you scrape a site for stories, make sure an article isn't already represented in your database before saving it; we don't want duplicates.
+
+* Don't just clear out your database and populate it with scraped articles whenever a user accesses your site.
+
+  * If your app deletes stories every time someone visits, your users won't be able to see any comments except the ones that they post.
+
+### Helpful Links
+
+* [MongoDB Documentation](https://docs.mongodb.com/manual/)
+* [Mongoose Documentation](http://mongoosejs.com/docs/api.html)
+* [Cheerio Documentation](https://github.com/cheeriojs/cheerio)
+
